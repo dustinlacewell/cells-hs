@@ -8,6 +8,7 @@ import qualified Control.Monad
 import Data.List ( zipWith4 )
 import Data.Foldable (toList)
 import Control.Monad
+import Data.Bits
 
 ruleNo = 30
 
@@ -27,6 +28,7 @@ fps = 60
 type Cell = Bool
 type Row = [Cell]
 type Grid = [Row]
+type RuleFunction = Bool -> Bool -> Bool -> Bool
 
 --- treat three bools as bits of an int
 lookupRuleIndex :: Bool -> Bool -> Bool -> Int
@@ -38,30 +40,11 @@ lookupRuleIndex a b c =
     in
         a' + b' + c'
 
---- convert 8-bit int to 8 bools
-ruleToBools :: Integral uInt8 => uInt8 -> [Bool]
-ruleToBools n =
-    let
-        a = n `mod` 2 == 1
-        b = n `div` 2 `mod` 2 == 1
-        c = n `div` 4 `mod` 2 == 1
-        d = n `div` 8 `mod` 2 == 1
-        e = n `div` 16 `mod` 2 == 1
-        f = n `div` 32 `mod` 2 == 1
-        g = n `div` 64 `mod` 2 == 1
-        h = n `div` 128 `mod` 2 == 1
-    in
-        [a, b, c, d, e, f, g, h]
-
-type RuleFunction = (Bool -> Bool -> Bool -> Bool)
-
 --- for given rule number, return function taking three bools and returning one bool
-ruleToFunction :: Integral uInt8 => uInt8 -> RuleFunction
-ruleToFunction n =
-    let
-        bools = ruleToBools n
-    in
-        \a b c -> bools !! lookupRuleIndex a b c
+ruleToFunction :: Int -> Bool -> Bool -> Bool -> Bool
+ruleToFunction n a b c =
+        let index = lookupRuleIndex a b c
+        in testBit n index
 
 --- given a Row and index, return the cell and its neighbors
 neighborhood :: Row -> Int -> (Bool, Bool, Bool)
